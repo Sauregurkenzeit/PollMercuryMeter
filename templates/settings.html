@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings</title>
+ <style>
+    button {
+        background-color: #4CAF50;
+        border: none;
+        color: white;
+        padding: 10px 20px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+        margin: 4px 2px;
+        cursor: pointer;
+        border-radius: 4px;
+    }
+    button:hover {
+        background-color: #45a049;
+    }
+    table {
+        border-collapse: collapse;
+        width: 50%;
+        margin-bottom: 20px;
+    }
+    th, td {
+        text-align: left;
+        padding: 8px;
+    }
+    tr:nth-child(even) {
+        background-color: #f2f2f2;
+    }
+    th {
+        background-color: #4CAF50;
+        color: white;
+    }
+    h2 {
+        margin-top: 40px;
+        margin-bottom: 10px;
+    }
+</style>
+</head>
+<body>
+    <h1>Settings</h1>
+    <h2>Devices</h2>
+    <table>
+        <tr>
+            <th>COM Port</th>
+            <th>Serial Number</th>
+            <th>Action</th>
+        </tr>
+        {% for device in config.devices %}
+        <tr>
+            <td>{{ device.com_port }}</td>
+            <td>{{ device.serial_number }}</td>
+            <td>
+                <form method="POST">
+                    <input type="hidden" name="device_index" value="{{ loop.index0 }}">
+                    <input type="hidden" name="action" value="delete_device">
+                    <button type="submit">Delete</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    <h2>Add Device</h2>
+    <form method="POST">
+      <label for="com_port">COM Port:</label>
+      <select id="com_port" name="com_port" required>
+        {% for port in available_com_ports %}
+        <option value="{{ port }}">{{ port }}</option>
+        {% endfor %}
+      </select>
+      <label for="serial_number">Serial Number:</label>
+      <input type="text" id="serial_number" name="serial_number" required>
+      <input type="hidden" name="action" value="add_device">
+      <button type="submit">Add Device</button>
+    </form>
+    <!-- Add this code after the "Add Device" form -->
+    <h2>Required Commands</h2>
+    <table>
+      <tr>
+        <th>Command</th>
+        <th>Description</th>
+        <th>Action</th>
+      </tr>
+      {% for command in required_commands %}
+      <tr>
+        <td>{{ '%02X' % command.command }}</td>
+        <td>{{ command.description }}</td>
+        <td>
+          <form method="POST">
+            <input type="hidden" name="command_index" value="{{ loop.index0 }}">
+            <input type="hidden" name="action" value="delete_command">
+            <button type="submit">Delete</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </table>
+    <h2>Add Command</h2>
+    <form method="POST">
+      <label for="command">Command:</label>
+      <select id="command" name="command" required>
+        {% for command in all_commands %}
+        <option value="{{ '%02X' % command.command }}">{{ '%02X' % command.command }} - {{ command.description }}</option>
+        {% endfor %}
+      </select>
+      <input type="hidden" name="action" value="add_command">
+      <button type="submit">Add</button>
+    </form>
+<form action="{{ url_for('index') }}" method="get">
+    <button type="submit">Back to Results</button>
+</form>
+</body>
+</html>

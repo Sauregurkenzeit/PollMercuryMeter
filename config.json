@@ -1,0 +1,18 @@
+{
+    "poll_interval": 60,
+    "devices": [
+        {
+            "com_port": "Virtual/COM1",
+            "serial_number": "123123"
+        },
+        {
+            "com_port": "Virtual/COM1",
+            "serial_number": "123456"
+        }
+    ],
+    "commands": [
+        39,
+        99,
+        106
+    ]
+}
