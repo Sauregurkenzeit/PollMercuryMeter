@@ -4,10 +4,19 @@ from virtual_serial_device import DummySerial
 import struct
 import time
 from flask import Flask, render_template, request, redirect, url_for
+from flask import jsonify
 import json
 import serial.tools.list_ports
+from command_handlers import *
 
 app = Flask(__name__)
+
+
+@app.route("/poll_data", methods=["GET"])
+def poll_data():
+    config = read_config("config.json")
+    results = poll_devices(config)
+    return jsonify(results)
 
 
 @app.route("/", methods=["GET"])
@@ -73,8 +82,12 @@ def get_available_com_ports():
 
 
 def save_config(config, file_path="config.json"):
+    # Remove duplicates from the commands list
+    config["commands"] = list(set(config["commands"]))
+
     with open(file_path, "w") as json_file:
         json.dump(config, json_file, indent=4)
+
 
 
 def read_config(filename):
@@ -91,19 +104,6 @@ def read_commands(config):
             commands.append({"command": int(row[0], 16), "description": row[1], "handle_function": row[2]})
     selected_commands = [cmd for cmd in commands if cmd["command"] in config["commands"]]
     return commands, selected_commands
-
-
-def handle_command_27(out):
-    # ... (handle the response for command \x27)
-    data = ''.join('{:02x}'.format(c) for c in out[5:9])
-    result = f"{data}"
-    return result
-
-
-def handle_command_63(out):
-    # ... (handle the response for command \x63)
-    result = f"Result for command 63: ..."
-    return result
 
 
 def poll_device(ser, sn, command, handle_function):

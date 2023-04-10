@@ -8,11 +8,17 @@
         {
             "com_port": "Virtual/COM1",
             "serial_number": "123456"
+        },
+        {
+            "com_port": "Virtual/COM1",
+            "serial_number": "111111"
         }
     ],
     "commands": [
-        39,
+        32,
         99,
-        106
+        100,
+        40,
+        47
     ]
 }

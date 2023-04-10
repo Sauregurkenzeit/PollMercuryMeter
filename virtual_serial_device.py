@@ -1,7 +1,9 @@
 import threading
 import time
 import io
+import random
 from serial import Serial
+from crccheck.crc import Crc16
 
 
 class DummySerial(Serial):
@@ -20,9 +22,14 @@ class DummySerial(Serial):
 
     def write(self, data):
         with self.lock:
-            self.buffer.write(data)
-
-            self.last_received_message = data
+            add = data[:2]
+            cmd = data[2:3]
+            rnd = random.randint(0, 2**32 - 1).to_bytes(4, 'big')
+            crc_data = add + cmd + rnd
+            crc = Crc16.calc(crc_data).to_bytes(2, 'big')
+            response = add + cmd + rnd + crc
+            self.buffer.write(response)
+            self.last_received_message = response
 
     def __enter__(self):
         return self
@@ -37,6 +44,39 @@ class DummySerial(Serial):
     def read_all(self):
         with self.lock:
             return self.last_received_message
+# class DummySerial(Serial):
+#     def __init__(self, *args, **kwargs):
+#         super().__init__(*args, **kwargs)
+#         self.buffer = io.BytesIO()
+#         self.lock = threading.Lock()
+#         self.last_received_message = b''
+#
+#     def read(self, size=1):
+#         with self.lock:
+#             self.buffer.seek(0)
+#             data = self.buffer.read(size)
+#             self.buffer.seek(0, io.SEEK_END)
+#             return data
+#
+#     def write(self, data):
+#         with self.lock:
+#             self.buffer.write(data)
+#
+#             self.last_received_message = data
+#
+#     def __enter__(self):
+#         return self
+#
+#     def __exit__(self, exc_type, exc_val, exc_tb):
+#         # Perform any cleanup tasks here
+#         pass
+#
+#     def isOpen(self):
+#         return True
+#
+#     def read_all(self):
+#         with self.lock:
+#             return self.last_received_message
 
 
 class VirtualSerialDeviceThread(threading.Thread):
